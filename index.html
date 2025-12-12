@@ -10,8 +10,122 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- ... (styles remain same) ... -->
-    
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Outfit"', 'sans-serif'] },
+                    colors: {
+                        dark: { 
+                            bg: '#0B1121', // Deep Navy/Black
+                            surface: '#151E32', // Slightly Lighter
+                            border: '#2A3655'
+                        },
+                        primary: { 
+                            DEFAULT: '#0EA5E9', // Sky 500
+                            glow: '#38BDF8',
+                            dim: '#0369A1'
+                        },
+                        accent: {
+                            cyan: '#06B6D4',
+                            purple: '#8B5CF6'
+                        }
+                    },
+                    boxShadow: {
+                        'neon': '0 0 20px rgba(14, 165, 233, 0.3)',
+                        'neon-strong': '0 0 30px rgba(14, 165, 233, 0.5)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+                    },
+                    animation: {
+                        'pulse-glow': 'pulse-glow 3s infinite',
+                        'scan-vertical': 'scan-vertical 3s linear infinite',
+                        'float': 'float 6s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        'pulse-glow': {
+                            '0%, 100%': { boxShadow: '0 0 15px rgba(14, 165, 233, 0.2)' },
+                            '50%': { boxShadow: '0 0 25px rgba(14, 165, 233, 0.5)' }
+                        },
+                        'scan-vertical': {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(100%)' }
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0B1121;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 25%);
+            color: #E2E8F0;
+        }
+
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0B1121; }
+        ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+        /* Glass Components */
+        .glass-panel {
+            background: rgba(21, 30, 50, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .input-tech {
+            background: rgba(11, 17, 33, 0.6);
+            border: 1px solid #2A3655;
+            color: #F1F5F9;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-tech:focus {
+            border-color: #0EA5E9;
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.15);
+            background: rgba(11, 17, 33, 0.9);
+        }
+        .input-tech::placeholder { color: #475569; }
+
+        /* Custom Select Arrow */
+        select.input-tech {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+        }
+
+        /* Scan Effect */
+        .scanner-beam {
+            background: linear-gradient(to bottom, transparent, rgba(14, 165, 233, 0.5), transparent);
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .glow-text {
+            text-shadow: 0 0 10px rgba(14, 165, 233, 0.5);
+        }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden antialiased selection:bg-primary selection:text-white">
+
     <!-- Sidebar -->
     <aside class="w-20 lg:w-24 bg-[#0F1629] border-r border-[#1E293B] flex flex-col items-center py-8 z-50 hidden md:flex">
         <!-- Logo -->
@@ -21,7 +135,85 @@
             </div>
         </div>
 
-        <!-- ... (nav items remain same) ... -->
+        <!-- Nav Items -->
+        <nav class="flex-1 space-y-6 w-full flex flex-col items-center">
+            <button class="w-12 h-12 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center relative group">
+                <i class="fa-solid fa-layer-group text-lg group-hover:drop-shadow-[0_0_5px_rgba(14,165,233,0.8)] transition-all"></i>
+                <span class="absolute left-full ml-4 px-2 py-1 bg-gray-800 text-xs rounded text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-gray-700">Dashboard</span>
+            </button>
+            <a href="/analytics" class="w-12 h-12 rounded-xl text-gray-500 hover:text-white hover:bg-primary/20 hover:shadow-[0_0_15px_rgba(14,165,233,0.3)] flex items-center justify-center transition-all group relative">
+                <i class="fa-solid fa-chart-pie text-lg"></i>
+                <span class="absolute left-full ml-4 px-2 py-1 bg-gray-800 text-xs rounded text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-gray-700">Analytics</span>
+            </a>
+        </nav>
+
+        <!-- Bottom Actions -->
+        <div class="space-y-4 flex flex-col items-center w-full relative">
+            
+            <!-- Team / Info Group -->
+            <div class="relative group">
+                <button class="w-10 h-10 rounded-full bg-gray-800 text-gray-400 group-hover:text-white group-hover:bg-primary/20 group-hover:shadow-[0_0_15px_rgba(14,165,233,0.3)] flex items-center justify-center transition-all duration-300">
+                    <i class="fa-solid fa-users-viewfinder"></i>
+                </button>
+
+                <!-- Creative Pop-out Card -->
+                <div class="absolute left-14 bottom-0 w-72 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-x-2 z-50">
+                    <div class="glass-panel p-5 rounded-2xl border border-white/10 relative overflow-hidden">
+                        <!-- Glow Effect -->
+                        <div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 blur-[50px] rounded-full"></div>
+                        
+                        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                             <i class="fa-solid fa-code-branch text-primary"></i> Project Leadership
+                        </h4>
+
+                        <!-- Supervisor -->
+                        <div class="mb-4 pb-4 border-b border-white/5">
+                            <div class="flex items-center gap-3 mb-1">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg text-white">
+                                    <i class="fa-solid fa-crown text-xs"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-white leading-tight">Dr. Ahd Ehab</p>
+                                    <p class="text-[10px] text-amber-400 font-mono">SUPERVISOR</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Team -->
+                        <div class="space-y-3">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase">Engineering Unit</p>
+                            
+                            <!-- Member 1 -->
+                            <div class="flex items-center gap-3 group/item">
+                                <div class="w-1 h-8 bg-slate-700 rounded-full group-hover/item:bg-primary transition-colors"></div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-300 group-hover/item:text-white transition-colors">Muhammed Nasr Fayez</p>
+                                </div>
+                            </div>
+                            <!-- Member 2 -->
+                            <div class="flex items-center gap-3 group/item">
+                                <div class="w-1 h-8 bg-slate-700 rounded-full group-hover/item:bg-primary transition-colors"></div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-300 group-hover/item:text-white transition-colors">Muhammad Sedawi</p>
+                                </div>
+                            </div>
+                            <!-- Member 3 -->
+                            <div class="flex items-center gap-3 group/item">
+                                <div class="w-1 h-8 bg-slate-700 rounded-full group-hover/item:bg-primary transition-colors"></div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-300 group-hover/item:text-white transition-colors">Momen Uthman Ali</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <button class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 border border-gray-600 flex items-center justify-center hover:scale-105 transition-transform">
+                <i class="fa-solid fa-user text-xs text-gray-300"></i>
+            </button>
+        </div>
     </aside>
 
     <!-- Main Content -->
@@ -183,7 +375,7 @@
                                 <div class="absolute inset-0 border border-slate-700/50 rounded-full animate-[spin_10s_linear_infinite]"></div>
                                 <div class="absolute inset-2 border border-slate-700/50 rounded-full border-dashed animate-[spin_15s_linear_infinite_reverse]"></div>
                                 <div class="w-32 h-32 rounded-full bg-slate-800/50 flex items-center justify-center shadow-lg backdrop-blur-sm animate-float">
-                                    <i class="fa-solid fa-fingerprint text-5xl text-slate-600"></i>
+                                    <i class="fa-solid fa-virus-covid text-5xl text-rose-500/50"></i>
                                 </div>
                             </div>
                             <h3 class="text-xl font-bold text-white tracking-tight">System Standby</h3>
