@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS AI | Deep Analytics</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Outfit"', 'sans-serif'] },
+                    colors: {
+                        dark: { bg: '#0B1121', surface: '#151E32', border: '#2A3655' },
+                        primary: { DEFAULT: '#0EA5E9', glow: '#38BDF8' },
+                        accent: { purple: '#8B5CF6', rose: '#F43F5E', em: '#10B981' }
+                    },
+                    boxShadow: { 'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0B1121; color: #E2E8F0; }
+        .glass-panel {
+            background: rgba(21, 30, 50, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <!-- Sidebar Mini -->
+    <aside class="w-20 bg-[#0F1629] border-r border-[#1E293B] flex flex-col items-center py-8 z-50 hidden md:flex">
+        <a href="/" class="w-12 h-12 mb-8 rounded-xl bg-gray-800 flex items-center justify-center hover:bg-primary/20 hover:text-white transition-all text-gray-400">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center relative">
+            <i class="fa-solid fa-chart-pie text-lg"></i>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <header class="h-20 px-8 flex items-center justify-between border-b border-[#1E293B] bg-[#0B1121]/80 backdrop-blur-md">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
+                    QUANTUM <span class="text-primary font-extrabold">ANALYTICS</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">DATASET V1.0</span>
+                </h1>
+            </div>
+            <div id="connectionStatus" class="flex items-center gap-2 text-xs font-mono text-slate-500">
+                <span class="w-2 h-2 rounded-full bg-slate-600"></span> CONNECTING...
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 scroll-smooth">
+            
+            <!-- KPIs -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Total Cases -->
+                <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 rounded-bl-full transition-all group-hover:bg-blue-500/10"></div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Records</p>
+                    <h3 id="kpiTotal" class="text-4xl font-black text-white">--</h3>
+                    <div class="mt-2 text-xs text-blue-400 font-mono">100% COVERAGE</div>
+                </div>
+
+                <!-- Positive Rate -->
+                <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-rose-500/5 rounded-bl-full transition-all group-hover:bg-rose-500/10"></div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Positive Cases</p>
+                    <h3 id="kpiPositive" class="text-4xl font-black text-white">--</h3>
+                    <div class="mt-2 text-xs text-rose-400 font-mono flex items-center gap-2">
+                        <i class="fa-solid fa-virus"></i> CONFIRMED
+                    </div>
+                </div>
+
+                <!-- Negative Rate -->
+                <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full transition-all group-hover:bg-emerald-500/10"></div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Negative Cases</p>
+                    <h3 id="kpiNegative" class="text-4xl font-black text-white">--</h3>
+                    <div class="mt-2 text-xs text-emerald-400 font-mono flex items-center gap-2">
+                        <i class="fa-solid fa-shield-virus"></i> CLEARED
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                
+                <!-- Radar: Vitals Signature -->
+                <div class="glass-panel p-6 rounded-2xl border border-white/5">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h3 class="font-bold text-white text-lg">Biometric Signature</h3>
+                            <p class="text-xs text-slate-400">Comparing average profiles of Positive vs Negative cases.</p>
+                        </div>
+                        <i class="fa-solid fa-bullseye text-primary text-xl opacity-50"></i>
+                    </div>
+                    <div class="relative h-72 w-full">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Scatter: Cluster Map -->
+                <div class="glass-panel p-6 rounded-2xl border border-white/5">
+                     <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h3 class="font-bold text-white text-lg">Infection Clusters</h3>
+                            <p class="text-xs text-slate-400">Temperature vs Inflammatory Marker correlation.</p>
+                        </div>
+                        <i class="fa-solid fa-braille text-purple-400 text-xl opacity-50"></i>
+                    </div>
+                    <div class="relative h-72 w-full">
+                        <canvas id="scatterChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Polar: Risk Factors -->
+                <div class="glass-panel p-6 rounded-2xl border border-white/5 lg:col-span-1">
+                    <h3 class="font-bold text-white text-lg mb-6">Risk Factor Impact</h3>
+                    <div class="relative h-64 w-full flex items-center justify-center">
+                        <canvas id="polarChart"></canvas>
+                    </div>
+                </div>
+
+                 <!-- Bar: Geography -->
+                <div class="glass-panel p-6 rounded-2xl border border-white/5 lg:col-span-2">
+                    <h3 class="font-bold text-white text-lg mb-6">Geographic Distribution</h3>
+                    <div class="relative h-64 w-full">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Config Charts Default
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = '#1e293b';
+        Chart.defaults.font.family = '"Outfit", sans-serif';
+
+        async function initDashboard() {
+            try {
+                const res = await fetch('/api/stats');
+                if(!res.ok) throw new Error("API Failed");
+                const data = await res.json();
+                
+                if(data.error) throw new Error(data.error);
+
+                updateKPIs(data.summary);
+                renderRadar(data.averages);
+                renderScatter(data.scatter);
+                renderPolar(data.risk_distribution);
+                renderBar(data.cities);
+
+                document.getElementById('connectionStatus').innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span> LIVE DATA LINK';
+                document.getElementById('connectionStatus').className = "flex items-center gap-2 text-xs font-mono text-emerald-400";
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('connectionStatus').innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span> DATA LINK OFFLINE';
+                document.getElementById('connectionStatus').className = "flex items-center gap-2 text-xs font-mono text-rose-500";
+            }
+        }
+
+        function updateKPIs(data) {
+            document.getElementById('kpiTotal').textContent = data.total.toLocaleString();
+            document.getElementById('kpiPositive').textContent = data.positive.toLocaleString();
+            document.getElementById('kpiNegative').textContent = data.negative.toLocaleString();
+        }
+
+        function renderRadar(data) {
+            // Need to Normalize data for radar to look good because Age (40) >> Marker (5)
+            // Or just plot raw and let chart.js scale? Radar scales are unified usually. 
+            // Better to normalize or use Multi-Axis? ChartJS Radar is simple.
+            // Let's just map them raw, might look skewed if scales differ wildly.
+            // Fix: Use simple Min-Max scaling visually or just show separate axes? 
+            // Let's just use raw but be aware.
+            // Actually, let's normalize to 100% of max value per category to compare SHAPE.
+            
+            const labels = ['Temp', 'Age', 'Marker', 'Duration'];
+            
+            // Heuristic Max values for normalization
+            const maxVals = { temperature_C: 40, age: 90, inflammatory_marker: 50, symptom_duration_days: 15 };
+            
+            const norm = (val, cat) => (val / maxVals[cat]) * 100;
+
+            const posData = [
+                norm(data.positive.temperature_C, 'temperature_C'),
+                norm(data.positive.age, 'age'),
+                norm(data.positive.inflammatory_marker, 'inflammatory_marker'),
+                norm(data.positive.symptom_duration_days, 'symptom_duration_days')
+            ];
+            
+            const negData = [
+                norm(data.negative.temperature_C, 'temperature_C'),
+                norm(data.negative.age, 'age'),
+                norm(data.negative.inflammatory_marker, 'inflammatory_marker'),
+                norm(data.negative.symptom_duration_days, 'symptom_duration_days')
+            ];
+
+            new Chart(document.getElementById('radarChart'), {
+                type: 'radar',
+                data: {
+                    labels: ['Temp', 'Age', 'Inflamm.', 'Duration'],
+                    datasets: [
+                        {
+                            label: 'Positive Profile',
+                            data: posData,
+                            borderColor: '#F43F5E',
+                            backgroundColor: 'rgba(244, 63, 94, 0.2)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#F43F5E'
+                        },
+                        {
+                            label: 'Negative Profile',
+                            data: negData,
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#10B981'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#1e293b' },
+                            grid: { color: '#1e293b' },
+                            pointLabels: { color: '#cbd5e1', font: {size: 11, weight: 'bold'} },
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: { legend: { labels: { color: '#fff' } } }
+                }
+            });
+        }
+
+        function renderScatter(data) {
+            new Chart(document.getElementById('scatterChart'), {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Positive',
+                            data: data.filter(d => d.type === 'positive'),
+                            backgroundColor: '#F43F5E',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Negative',
+                            data: data.filter(d => d.type === 'negative'),
+                            backgroundColor: '#10B981',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'Temperature', color: '#64748b' },
+                            grid: { color: '#1e293b' }
+                        },
+                        y: { 
+                            title: { display: true, text: 'Inflam. Marker', color: '#64748b' },
+                            grid: { color: '#1e293b' }
+                        }
+                    },
+                    plugins: { legend: { labels: { color: '#fff' } } }
+                }
+            });
+        }
+
+        function renderPolar(data) {
+            // Data Structure: { Low: {negative: 50, positive: 10}, High: ... }
+            // We want to show Share of Positive cases by Risk Factor
+            
+            const labels = Object.keys(data);
+            const posCounts = labels.map(l => data[l].positive || 0);
+            
+            new Chart(document.getElementById('polarChart'), {
+                type: 'polarArea',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: posCounts,
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.6)', // Low - Green
+                            'rgba(56, 189, 248, 0.6)', // Med - Blue
+                            'rgba(244, 63, 94, 0.6)'   // High - Red
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { r: { grid: { color: '#1e293b' }, ticks: { display: false, backdropColor: 'transparent' } } },
+                    plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1' } } }
+                }
+            });
+        }
+
+        function renderBar(data) {
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+
+            new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Applicants',
+                        data: values,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: '#1e293b' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        initDashboard();
+    </script>
+</body>
+</html>
