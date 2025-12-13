@@ -7,6 +7,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.svm import SVC
+from sklearn.impute import KNNImputer
 
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
@@ -29,12 +30,14 @@ def main():
 
     temp_pipeline = Pipeline([
         ('cleaner', TempCleaner()),
-        ('imputer', SimpleImputer(strategy='mean')),
+        # ('imputer', SimpleImputer(strategy='mean')),
+        ('imputer', KNNImputer(n_neighbors=5)), 
         ('scaler', StandardScaler())
     ])
 
     num_pipeline = Pipeline([
-        ('imputer', SimpleImputer(strategy='mean')),
+        # ('imputer', SimpleImputer(strategy='mean')),
+        ('imputer', KNNImputer(n_neighbors=5)),
         ('scaler', StandardScaler())
     ])
 

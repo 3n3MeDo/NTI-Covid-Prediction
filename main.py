@@ -7,7 +7,6 @@ import pandas as pd
 import os
 import uvicorn
 
-# استيراد الكلاسات من ml_utils (ضروري جداً لكي يفهم joblib الموديل)
 from ml_utils import TempCleaner, DiseaseExtractor, ManualMapper
 
 app = FastAPI(title="NTI Covid Prediction API")
@@ -15,7 +14,7 @@ app = FastAPI(title="NTI Covid Prediction API")
 # ==========================================
 # 1. إعدادات المسارات (Paths)
 # ==========================================
-# تحديد المجلد الحالي بدقة لضمان عمل الكود على Railway
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "automated_covid_model.pkl")
 HTML_PATH = os.path.join(BASE_DIR, "index.html")
@@ -23,6 +22,7 @@ HTML_PATH = os.path.join(BASE_DIR, "index.html")
 # ==========================================
 # 2. تفعيل CORS (للسماح للمتصفح بالاتصال)
 # ==========================================
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,16 +34,18 @@ app.add_middleware(
 # ==========================================
 # 3. تحميل الموديل
 # ==========================================
+
 model_pipeline = None
 try:
     model_pipeline = joblib.load(MODEL_PATH)
-    print(f"✅ Model loaded successfully form: {MODEL_PATH}")
+    print(f"Model loaded successfully form: {MODEL_PATH}")
 except Exception as e:
-    print(f"❌ Error loading model: {e}")
+    print(f"Error loading model: {e}")
 
 # ==========================================
 # 4. تعريف شكل البيانات (Pydantic Model)
 # ==========================================
+
 class PatientData(BaseModel):
     age: float
     temperature_C: str
@@ -56,7 +58,6 @@ class PatientData(BaseModel):
     chronic_diseases: str
     city: str
 
-    # إعدادات Pydantic V2
     model_config = ConfigDict(json_schema_extra={
         "example": {
             "age": 45,
@@ -76,14 +77,12 @@ class PatientData(BaseModel):
 # 5. الـ Endpoints (الرئيسي + التوقع)
 # ==========================================
 
-# الرابط الرئيسي: يعرض الداشبورد (index.html)
 @app.get("/")
 def read_root():
     if os.path.exists(HTML_PATH):
         return FileResponse(HTML_PATH)
     return {"error": "Dashboard file (index.html) not found. Please upload it."}
 
-# رابط التوقع: يستقبل البيانات ويرجع النتيجة
 @app.post("/predict")
 def predict_covid(data: PatientData):
     if model_pipeline is None:
@@ -120,6 +119,7 @@ def predict_covid(data: PatientData):
 # ==========================================
 # 6. Analytics & Data Endpoints
 # ==========================================
+
 ANALYTICS_HTML_PATH = os.path.join(BASE_DIR, "charts.html")
 CSV_PATH = os.path.join(BASE_DIR, "pcr_results_egyptian_applicants2020_dataset_final_version_dirty_extended_v3_with_city_and_markers.csv")
 
