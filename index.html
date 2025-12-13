@@ -210,9 +210,7 @@
                 </div>
             </div>
 
-            <button class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 border border-gray-600 flex items-center justify-center hover:scale-105 transition-transform">
-                <i class="fa-solid fa-user text-xs text-gray-300"></i>
-            </button>
+
         </div>
     </aside>
 
@@ -653,5 +651,64 @@
         }
 
     </script>
+    <!-- Mobile Team Toggle (Floating) -->
+    <div class="fixed bottom-6 right-6 z-50 md:hidden group">
+        <button class="w-12 h-12 rounded-full bg-slate-800 text-white shadow-lg border border-slate-700 flex items-center justify-center hover:bg-rose-500 hover:shadow-[0_0_15px_rgba(244,63,94,0.3)] transition-all">
+            <i class="fa-solid fa-users-viewfinder"></i>
+        </button>
+
+        <!-- Mobile Pop-out -->
+        <div class="absolute right-16 bottom-0 w-72 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:-translate-x-2 z-50">
+            <div class="glass-panel p-5 rounded-2xl border border-white/10 relative overflow-hidden bg-[#0B1121]/95 backdrop-blur-xl">
+                 <!-- Glow Effect -->
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 blur-[50px] rounded-full"></div>
+                
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                     <i class="fa-solid fa-code-branch text-primary"></i> Project Leadership
+                </h4>
+
+                <!-- Supervisor -->
+                <div class="mb-4 pb-4 border-b border-white/5">
+                    <div class="flex items-center gap-3 mb-1">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg text-white">
+                            <i class="fa-solid fa-crown text-xs"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-white leading-tight">Dr. Ahd Ehab</p>
+                            <p class="text-[10px] text-amber-400 font-mono">SUPERVISOR</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team -->
+                <div class="space-y-3">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase">Engineering Unit</p>
+                    
+                    <!-- Member 1 -->
+                    <div class="flex items-center gap-3 group/item">
+                        <div class="w-1 h-8 bg-slate-700 rounded-full group-hover/item:bg-primary transition-colors"></div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-300 group-hover/item:text-white transition-colors">Muhammed Nasr Fayez</p>
+                        </div>
+                    </div>
+                    <!-- Member 2 -->
+                    <div class="flex items-center gap-3 group/item">
+                        <div class="w-1 h-8 bg-slate-700 rounded-full group-hover/item:bg-primary transition-colors"></div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-300 group-hover/item:text-white transition-colors">Muhammad Sedawi</p>
+                        </div>
+                    </div>
+                    <!-- Member 3 -->
+                    <div class="flex items-center gap-3 group/item">
+                        <div class="w-1 h-8 bg-slate-700 rounded-full group-hover/item:bg-primary transition-colors"></div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-300 group-hover/item:text-white transition-colors">Momen Uthman Ali</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </body>
 </html>
