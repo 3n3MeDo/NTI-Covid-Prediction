@@ -84,6 +84,20 @@ def main():
     full_pipeline.fit(X_train, y_train)
 
 
+    train_acc = full_pipeline.score(X_train, y_train)
+    print(f"\n🧠 Training Accuracy: {train_acc:.2%}")
+    
+    # ============================================================
+    # الجزء القديم: التقييم الشامل (Test Set)
+    # ============================================================
+    print("="*40)
+    print("MODEL EVALUATION REPORT (TEST SET)")
+    print("="*40)
+    
+    y_pred = full_pipeline.predict(X_test)
+    test_acc = accuracy_score(y_test, y_pred) # دي هي الـ Test Accuracy
+    print(f"Test Accuracy:    {test_acc:.2%}")
+
     print("\n" + "="*40)
     print("MODEL EVALUATION REPORT")
     print("="*40)
@@ -91,7 +105,7 @@ def main():
     y_pred = full_pipeline.predict(X_test)
     
     acc = accuracy_score(y_test, y_pred)
-    print(f"✅ Overall Accuracy: {acc:.2%}")
+    print(f"Overall Accuracy: {acc:.2%}")
     print("-" * 30)
 
     # 2. طباعة التقرير التفصيلي (Recall, Precision, F1)
