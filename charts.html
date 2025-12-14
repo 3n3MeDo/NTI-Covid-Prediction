@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COVID-19 | Dataset Analytics</title>
+    <title>COVID-19 | Advanced Analytics</title>
     
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -19,7 +21,7 @@
                     colors: {
                         dark: { bg: '#0B1121', surface: '#151E32', border: '#2A3655' },
                         primary: { DEFAULT: '#0EA5E9', glow: '#38BDF8' },
-                        accent: { purple: '#8B5CF6', rose: '#F43F5E', em: '#10B981' }
+                        accent: { purple: '#8B5CF6', rose: '#F43F5E', em: '#10B981', amber: '#F59E0B' }
                     },
                     boxShadow: { 'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)' }
                 }
@@ -32,12 +34,15 @@
             background: rgba(21, 30, 50, 0.6);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease;
+        }
+        .glass-panel:hover {
+            border-color: rgba(14, 165, 233, 0.3);
         }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
 
-    <!-- Sidebar Mini -->
     <aside class="w-20 bg-[#0F1629] border-r border-[#1E293B] flex flex-col items-center py-8 z-50 hidden md:flex">
         <a href="/" class="w-12 h-12 mb-8 rounded-xl bg-gray-800 flex items-center justify-center hover:bg-rose-500 hover:text-white hover:shadow-[0_0_15px_rgba(244,63,94,0.3)] transition-all text-gray-400">
             <i class="fa-solid fa-arrow-left"></i>
@@ -57,15 +62,13 @@
                 </h1>
             </div>
             <div id="connectionStatus" class="flex items-center gap-2 text-xs font-mono text-slate-500">
-                <span class="w-2 h-2 rounded-full bg-slate-600"></span> CONNECTING...
+                <span class="w-2 h-2 rounded-full bg-slate-600 animate-pulse"></span> CONNECTING...
             </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-8 scroll-smooth">
             
-            <!-- KPIs -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Total Cases -->
                 <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group">
                     <div class="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 rounded-bl-full transition-all group-hover:bg-blue-500/10"></div>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Records</p>
@@ -73,7 +76,6 @@
                     <div class="mt-2 text-xs text-blue-400 font-mono">100% COVERAGE</div>
                 </div>
 
-                <!-- Positive Rate -->
                 <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group">
                     <div class="absolute right-0 top-0 w-32 h-32 bg-rose-500/5 rounded-bl-full transition-all group-hover:bg-rose-500/10"></div>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Positive Cases</p>
@@ -83,7 +85,6 @@
                     </div>
                 </div>
 
-                <!-- Negative Rate -->
                 <div class="glass-panel p-6 rounded-2xl relative overflow-hidden group">
                     <div class="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full transition-all group-hover:bg-emerald-500/10"></div>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Negative Cases</p>
@@ -94,57 +95,60 @@
                 </div>
             </div>
 
-            <!-- Charts Grid -->
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-magnifying-glass-chart text-primary"></i> Correlations</h2>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                
-                <!-- Radar: Vitals Signature -->
-                <div class="glass-panel p-6 rounded-2xl border border-white/5">
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <h3 class="font-bold text-white text-lg">Biometric Signature</h3>
-                            <p class="text-xs text-slate-400">Comparing average profiles of Positive vs Negative cases.</p>
-                        </div>
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="font-bold text-white">Biometric Signature</h3>
                         <i class="fa-solid fa-bullseye text-primary text-xl opacity-50"></i>
                     </div>
-                    <div class="relative h-72 w-full">
-                        <canvas id="radarChart"></canvas>
-                    </div>
+                    <div class="relative h-72 w-full"><canvas id="radarChart"></canvas></div>
                 </div>
-
-                <!-- Scatter: Cluster Map -->
-                <div class="glass-panel p-6 rounded-2xl border border-white/5">
-                     <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <h3 class="font-bold text-white text-lg">Infection Clusters</h3>
-                            <p class="text-xs text-slate-400">Temperature vs Inflammatory Marker correlation.</p>
-                        </div>
-                        <i class="fa-solid fa-braille text-purple-400 text-xl opacity-50"></i>
+                <div class="glass-panel p-6 rounded-2xl">
+                     <div class="flex justify-between items-start mb-4">
+                        <h3 class="font-bold text-white">Infection Clusters</h3>
+                        <i class="fa-solid fa-braille text-accent-purple text-xl opacity-50"></i>
                     </div>
-                    <div class="relative h-72 w-full">
-                        <canvas id="scatterChart"></canvas>
-                    </div>
+                    <div class="relative h-72 w-full"><canvas id="scatterChart"></canvas></div>
                 </div>
-
             </div>
 
-             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-users-viewfinder text-accent-amber"></i> Demographics & Lifestyle</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
                 
-                <!-- Polar: Risk Factors -->
-                <div class="glass-panel p-6 rounded-2xl border border-white/5 lg:col-span-1">
-                    <h3 class="font-bold text-white text-lg mb-6">Risk Factor Impact</h3>
-                    <div class="relative h-64 w-full flex items-center justify-center">
-                        <canvas id="polarChart"></canvas>
-                    </div>
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="font-bold text-white mb-4 text-sm uppercase tracking-wide">Gender vs Result</h3>
+                    <div class="relative h-60 w-full"><canvas id="genderChart"></canvas></div>
                 </div>
 
-                 <!-- Bar: Geography -->
-                <div class="glass-panel p-6 rounded-2xl border border-white/5 lg:col-span-2">
-                    <h3 class="font-bold text-white text-lg mb-6">Geographic Distribution</h3>
-                    <div class="relative h-64 w-full">
-                        <canvas id="barChart"></canvas>
-                    </div>
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="font-bold text-white mb-4 text-sm uppercase tracking-wide">Smoking Status</h3>
+                    <div class="relative h-60 w-full"><canvas id="smokerChart"></canvas></div>
                 </div>
 
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="font-bold text-white mb-4 text-sm uppercase tracking-wide">Risk Factors</h3>
+                    <div class="relative h-60 w-full flex items-center justify-center"><canvas id="polarChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl mb-8">
+                <h3 class="font-bold text-white mb-4 text-sm uppercase tracking-wide">Age Group Analysis</h3>
+                <div class="relative h-64 w-full"><canvas id="ageChart"></canvas></div>
+            </div>
+
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-map-location-dot text-emerald-400"></i> Geography & Health</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="font-bold text-white mb-4 text-sm uppercase tracking-wide">Infection by City</h3>
+                    <div class="relative h-72 w-full"><canvas id="cityChart"></canvas></div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="font-bold text-white mb-4 text-sm uppercase tracking-wide">Comorbidity Impact</h3>
+                    <div class="relative h-72 w-full"><canvas id="diseaseCountChart"></canvas></div>
+                </div>
             </div>
 
         </div>
@@ -155,6 +159,13 @@
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.borderColor = '#1e293b';
         Chart.defaults.font.family = '"Outfit", sans-serif';
+        
+        const COLORS = {
+            pos: '#F43F5E', // Rose
+            posFade: 'rgba(244, 63, 94, 0.7)',
+            neg: '#10B981', // Emerald
+            negFade: 'rgba(16, 185, 129, 0.7)'
+        };
 
         async function initDashboard() {
             try {
@@ -165,10 +176,18 @@
                 if(data.error) throw new Error(data.error);
 
                 updateKPIs(data.summary);
+                
+                // Existing Charts
                 renderRadar(data.averages);
                 renderScatter(data.scatter);
                 renderPolar(data.risk_distribution);
-                renderBar(data.cities);
+                
+                // NEW Charts
+                renderGroupedBar('genderChart', data.distributions.gender, 'Gender');
+                renderGroupedBar('smokerChart', data.distributions.smoker, 'Smoking');
+                renderGroupedBar('ageChart', data.distributions.age, 'Age Groups');
+                renderGroupedBar('cityChart', data.distributions.city, 'City');
+                renderGroupedBar('diseaseCountChart', data.distributions.disease_count, 'Disease Count');
 
                 document.getElementById('connectionStatus').innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span> LIVE DATA LINK';
                 document.getElementById('connectionStatus').className = "flex items-center gap-2 text-xs font-mono text-emerald-400";
@@ -186,20 +205,50 @@
             document.getElementById('kpiNegative').textContent = data.negative.toLocaleString();
         }
 
+        // --- Generic Renderers for New Charts ---
+
+        function renderGroupedBar(canvasId, dataObj, labelPrefix) {
+            // dataObj structure: { 'Male': {positive: 10, negative: 5}, ... }
+            const labels = Object.keys(dataObj);
+            const posData = labels.map(l => dataObj[l].positive || 0);
+            const negData = labels.map(l => dataObj[l].negative || 0);
+
+            new Chart(document.getElementById(canvasId), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Positive',
+                            data: posData,
+                            backgroundColor: COLORS.pos,
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Negative',
+                            data: negData,
+                            backgroundColor: COLORS.neg,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: '#1e293b' } }
+                    },
+                    plugins: { legend: { labels: { usePointStyle: true, boxWidth: 6 } } },
+                    interaction: { mode: 'index', intersect: false }
+                }
+            });
+        }
+
+        // --- Existing Chart Renderers ---
+
         function renderRadar(data) {
-            // Need to Normalize data for radar to look good because Age (40) >> Marker (5)
-            // Or just plot raw and let chart.js scale? Radar scales are unified usually. 
-            // Better to normalize or use Multi-Axis? ChartJS Radar is simple.
-            // Let's just map them raw, might look skewed if scales differ wildly.
-            // Fix: Use simple Min-Max scaling visually or just show separate axes? 
-            // Let's just use raw but be aware.
-            // Actually, let's normalize to 100% of max value per category to compare SHAPE.
-            
-            const labels = ['Temp', 'Age', 'Marker', 'Duration'];
-            
-            // Heuristic Max values for normalization
             const maxVals = { temperature_C: 40, age: 90, inflammatory_marker: 50, symptom_duration_days: 15 };
-            
             const norm = (val, cat) => (val / maxVals[cat]) * 100;
 
             const posData = [
@@ -208,7 +257,6 @@
                 norm(data.positive.inflammatory_marker, 'inflammatory_marker'),
                 norm(data.positive.symptom_duration_days, 'symptom_duration_days')
             ];
-            
             const negData = [
                 norm(data.negative.temperature_C, 'temperature_C'),
                 norm(data.negative.age, 'age'),
@@ -221,35 +269,13 @@
                 data: {
                     labels: ['Temp', 'Age', 'Inflamm.', 'Duration'],
                     datasets: [
-                        {
-                            label: 'Positive Profile',
-                            data: posData,
-                            borderColor: '#F43F5E',
-                            backgroundColor: 'rgba(244, 63, 94, 0.2)',
-                            borderWidth: 2,
-                            pointBackgroundColor: '#F43F5E'
-                        },
-                        {
-                            label: 'Negative Profile',
-                            data: negData,
-                            borderColor: '#10B981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                            borderWidth: 2,
-                            pointBackgroundColor: '#10B981'
-                        }
+                        { label: 'Positive Profile', data: posData, borderColor: COLORS.pos, backgroundColor: 'rgba(244, 63, 94, 0.2)', borderWidth: 2 },
+                        { label: 'Negative Profile', data: negData, borderColor: COLORS.neg, backgroundColor: 'rgba(16, 185, 129, 0.2)', borderWidth: 2 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            angleLines: { color: '#1e293b' },
-                            grid: { color: '#1e293b' },
-                            pointLabels: { color: '#cbd5e1', font: {size: 11, weight: 'bold'} },
-                            ticks: { display: false }
-                        }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { r: { angleLines: { color: '#1e293b' }, grid: { color: '#1e293b' }, pointLabels: { color: '#cbd5e1', font: {size: 11, weight: 'bold'} }, ticks: { display: false } } },
                     plugins: { legend: { labels: { color: '#fff' } } }
                 }
             });
@@ -260,34 +286,15 @@
                 type: 'scatter',
                 data: {
                     datasets: [
-                        {
-                            label: 'Positive',
-                            data: data.filter(d => d.type === 'positive'),
-                            backgroundColor: '#F43F5E',
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        },
-                        {
-                            label: 'Negative',
-                            data: data.filter(d => d.type === 'negative'),
-                            backgroundColor: '#10B981',
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }
+                        { label: 'Positive', data: data.filter(d => d.type === 'positive'), backgroundColor: COLORS.pos, pointRadius: 4 },
+                        { label: 'Negative', data: data.filter(d => d.type === 'negative'), backgroundColor: COLORS.neg, pointRadius: 4 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     scales: {
-                        x: { 
-                            title: { display: true, text: 'Temperature', color: '#64748b' },
-                            grid: { color: '#1e293b' }
-                        },
-                        y: { 
-                            title: { display: true, text: 'Inflam. Marker', color: '#64748b' },
-                            grid: { color: '#1e293b' }
-                        }
+                        x: { title: { display: true, text: 'Temperature', color: '#64748b' }, grid: { color: '#1e293b' } },
+                        y: { title: { display: true, text: 'Inflam. Marker', color: '#64748b' }, grid: { color: '#1e293b' } }
                     },
                     plugins: { legend: { labels: { color: '#fff' } } }
                 }
@@ -295,58 +302,18 @@
         }
 
         function renderPolar(data) {
-            // Data Structure: { Low: {negative: 50, positive: 10}, High: ... }
-            // We want to show Share of Positive cases by Risk Factor
-            
             const labels = Object.keys(data);
             const posCounts = labels.map(l => data[l].positive || 0);
-            
             new Chart(document.getElementById('polarChart'), {
                 type: 'polarArea',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        data: posCounts,
-                        backgroundColor: [
-                            'rgba(16, 185, 129, 0.6)', // Low - Green
-                            'rgba(56, 189, 248, 0.6)', // Med - Blue
-                            'rgba(244, 63, 94, 0.6)'   // High - Red
-                        ],
-                        borderWidth: 0
-                    }]
+                    datasets: [{ data: posCounts, backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(56, 189, 248, 0.6)', 'rgba(244, 63, 94, 0.6)'], borderWidth: 0 }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     scales: { r: { grid: { color: '#1e293b' }, ticks: { display: false, backdropColor: 'transparent' } } },
                     plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1' } } }
-                }
-            });
-        }
-
-        function renderBar(data) {
-            const labels = Object.keys(data);
-            const values = Object.values(data);
-
-            new Chart(document.getElementById('barChart'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Total Applicants',
-                        data: values,
-                        backgroundColor: '#3b82f6',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { grid: { color: '#1e293b' } }
-                    },
-                    plugins: { legend: { display: false } }
                 }
             });
         }

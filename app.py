@@ -126,10 +126,6 @@ def predict_covid(data: PatientData):
 
 @app.get("/api/stats")
 def get_dataset_stats():
-    """
-    يقوم هذا الـ Endpoint بحساب جميع الإحصائيات اللازمة للرسومات البيانية
-    بما في ذلك التوزيعات الجديدة (Age, Gender, Smoker, Disease Count).
-    """
     try:
         if not os.path.exists(CSV_PATH):
             return {"error": "Dataset CSV file not found."}
@@ -138,14 +134,14 @@ def get_dataset_stats():
         df = pd.read_csv(CSV_PATH)
         
         # --- Preprocessing for Stats ---
-        # Map Result to numbers for counting
+        # Map Result
         df['pcr_result_num'] = df['pcr_result'].map({'positive': 1, 'negative': 0})
         
-        # Clean Temp (Simple cleanup for visualization)
+        # Clean Temp (Simple)
         df['temperature_C'] = df['temperature_C'].astype(str).str.replace('C', '', regex=False)
         df['temperature_C'] = pd.to_numeric(df['temperature_C'], errors='coerce')
 
-        # منطق حساب عدد الأمراض المزمنة
+        # Disease Count Logic
         def count_diseases(val):
             if pd.isna(val) or str(val).lower() in ['none', 'nan', '']:
                 return 0
@@ -153,31 +149,31 @@ def get_dataset_stats():
         
         df['disease_count'] = df['chronic_diseases'].apply(count_diseases)
 
-        # تقسيم الأعمار إلى فئات (Age Groups)
+        # Age Bins Logic
         bins = [0, 18, 30, 45, 60, 80, 120]
         labels = ['0-18', '19-30', '31-45', '46-60', '61-80', '80+']
         df['age_group'] = pd.cut(df['age'], bins=bins, labels=labels, right=False)
 
-        # --- Aggregations (تجميع البيانات) ---
+        # --- Aggregations ---
 
-        # 1. Summary KPIs
+        # 1. Summary
         total_samples = len(df)
         positive_cases = int(df['pcr_result_num'].sum())
         negative_cases = total_samples - positive_cases
 
-        # 2. Gender Distribution (Grouped by Result) -> For Bar Chart
+        # 2. Gender Distribution (Grouped by Result)
         gender_dist = df.groupby(['gender', 'pcr_result']).size().unstack(fill_value=0).to_dict(orient='index')
 
-        # 3. Smoker Distribution -> For Bar Chart
+        # 3. Smoker Distribution
         smoker_dist = df.groupby(['smoker_status', 'pcr_result']).size().unstack(fill_value=0).to_dict(orient='index')
 
-        # 4. Age Group Distribution -> For Bar Chart
+        # 4. Age Group Distribution
         age_dist = df.groupby(['age_group', 'pcr_result'], observed=False).size().unstack(fill_value=0).to_dict(orient='index')
 
-        # 5. Disease Count Distribution -> For Bar Chart
+        # 5. Disease Count Distribution
         disease_count_dist = df.groupby(['disease_count', 'pcr_result']).size().unstack(fill_value=0).to_dict(orient='index')
 
-        # 6. City Distribution (Detailed Positive/Negative) -> For Bar Chart
+        # 6. City Distribution (Detailed Positive/Negative)
         city_dist = df.groupby(['city', 'pcr_result']).size().unstack(fill_value=0).to_dict(orient='index')
 
         # 7. Radar Data (Averages)
@@ -188,7 +184,7 @@ def get_dataset_stats():
             "negative": grouped_avg.loc['negative'].to_dict() if 'negative' in grouped_avg.index else {}
         }
         
-        # 8. Scatter Sample (Temperature vs Marker)
+        # 8. Scatter Sample
         positive_sample = df[df['pcr_result'] == 'positive'].sample(min(50, positive_cases))
         negative_sample = df[df['pcr_result'] == 'negative'].sample(min(50, negative_cases))
         scatter_data = []
@@ -199,7 +195,7 @@ def get_dataset_stats():
              if pd.notna(row['temperature_C']) and pd.notna(row['inflammatory_marker']):
                 scatter_data.append({"x": row['temperature_C'], "y": row['inflammatory_marker'], "type": "negative"})
 
-        # 9. Risk Polar (Existing)
+        # 9. Risk Polar
         risk_dist = df.groupby(['clean_comorbidity_risk', 'pcr_result']).size().unstack(fill_value=0).to_dict(orient='index')
 
         return {
