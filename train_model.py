@@ -5,13 +5,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.impute import SimpleImputer
+from sklearn.impute import SimpleImputer, KNNImputer
 from sklearn.svm import SVC
-from sklearn.impute import KNNImputer
-
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
-from ml_utils import TempCleaner, DiseaseExtractor, ManualMapper
+from ml_utils import TempCleaner, DiseaseExtractor, ManualMapper, SmartAgeImputer
 
 def main():
     print("Downloading data")
@@ -30,13 +28,11 @@ def main():
 
     temp_pipeline = Pipeline([
         ('cleaner', TempCleaner()),
-        # ('imputer', SimpleImputer(strategy='mean')),
         ('imputer', KNNImputer(n_neighbors=5)), 
         ('scaler', StandardScaler())
     ])
 
     num_pipeline = Pipeline([
-        # ('imputer', SimpleImputer(strategy='mean')),
         ('imputer', KNNImputer(n_neighbors=5)),
         ('scaler', StandardScaler())
     ])
@@ -60,6 +56,7 @@ def main():
         ('encoder', OneHotEncoder(drop='first', handle_unknown='ignore'))
     ])
 
+
     preprocessor = ColumnTransformer(
         transformers=[
             ('temp', temp_pipeline, ['temperature_C']),
@@ -75,27 +72,25 @@ def main():
         verbose_feature_names_out=False
     )
 
+
     full_pipeline = Pipeline([
+        ('age_fixer', SmartAgeImputer()), 
         ('preprocessor', preprocessor),
-        ('model', SVC(probability=True)) # يمكنك تجربة kernel='linear' أو 'rbf' هنا
+        ('model', SVC(probability=True)) 
     ])
 
     print("Training Model")
     full_pipeline.fit(X_train, y_train)
 
-
     train_acc = full_pipeline.score(X_train, y_train)
     print(f"\n🧠 Training Accuracy: {train_acc:.2%}")
     
-    # ============================================================
-    # الجزء القديم: التقييم الشامل (Test Set)
-    # ============================================================
     print("="*40)
     print("MODEL EVALUATION REPORT (TEST SET)")
     print("="*40)
     
     y_pred = full_pipeline.predict(X_test)
-    test_acc = accuracy_score(y_test, y_pred) # دي هي الـ Test Accuracy
+    test_acc = accuracy_score(y_test, y_pred)
     print(f"Test Accuracy:    {test_acc:.2%}")
 
     print("\n" + "="*40)
@@ -108,13 +103,11 @@ def main():
     print(f"Overall Accuracy: {acc:.2%}")
     print("-" * 30)
 
-    # 2. طباعة التقرير التفصيلي (Recall, Precision, F1)
-    print("\n📝 Detailed Classification Report:")
+    print("Detailed Classification Report:")
     print(classification_report(y_test, y_pred, target_names=['Negative (0)', 'Positive (1)']))
     
-    # 3. طباعة مصفوفة التشتت (Confusion Matrix) لمعرفة الأخطاء بالتحديد
     cm = confusion_matrix(y_test, y_pred)
-    print("\n🔍 Confusion Matrix:")
+    print("Confusion Matrix:")
     print(f"True Negatives (Correct Healthy): {cm[0][0]}")
     print(f"False Positives (Wrongly Diagnosed Sick): {cm[0][1]}")
     print(f"False Negatives (Missed Cases - DANGEROUS): {cm[1][0]}")

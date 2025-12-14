@@ -6,8 +6,10 @@ import joblib
 import pandas as pd
 import os
 import uvicorn
+import numpy as np  # نحتاج numpy للتعامل مع المصفوفات بشكل أسهل
 
-from ml_utils import TempCleaner, DiseaseExtractor, ManualMapper
+# استدعاء الأدوات الخاصة بنا
+from ml_utils import TempCleaner, DiseaseExtractor, ManualMapper, SmartAgeImputer
 
 app = FastAPI(title="NTI Covid Prediction API")
 
@@ -38,9 +40,9 @@ app.add_middleware(
 model_pipeline = None
 try:
     model_pipeline = joblib.load(MODEL_PATH)
-    print(f"Model loaded successfully form: {MODEL_PATH}")
+    print(f"✅ Model loaded successfully from: {MODEL_PATH}")
 except Exception as e:
-    print(f"Error loading model: {e}")
+    print(f"❌ Error loading model: {e}")
 
 # ==========================================
 # 4. تعريف شكل البيانات (Pydantic Model)
@@ -90,30 +92,37 @@ def predict_covid(data: PatientData):
     
     try:
         # تحويل البيانات لـ DataFrame
-        # data.model_dump() هو البديل الحديث لـ .dict() في Pydantic V2
-        # لكن .dict() ما زال يعمل، سنستخدم model_dump للأفضلية لو متاح، أو dict
-        input_data = pd.DataFrame([data.dict()])
+        input_data = pd.DataFrame([data.model_dump()])  # model_dump() هو الأحدث في Pydantic v2
         
-        # التوقع
-        prediction = model_pipeline.predict(input_data)[0]
-        result = "Positive" if prediction == 1 else "Negative"
+        # ---------------------------------------------------------
+        # التعديل هنا: الاعتماد الكلي على الاحتمالات (Probabilities)
+        # ---------------------------------------------------------
         
-        # محاولة جلب نسبة الثقة (Confidence)
-        confidence = None
-        try:
-            probs = model_pipeline.predict_proba(input_data)[0]
-            # لو النتيجة إيجابية نأخذ احتمال الـ 1، ولو سلبية نأخذ احتمال الـ 0
-            confidence = float(probs[1]) if prediction == 1 else float(probs[0])
-        except:
-            pass
-
+        # 1. نحسب الاحتمالات (ترجع مصفوفة [احتمال_0, احتمال_1])
+        probs = model_pipeline.predict_proba(input_data)[0]
+        
+        # 2. نحدد الفئة بناءً على الاحتمال الأكبر
+        # إذا كان احتمال الإصابة (1) أكبر من احتمال السلامة (0)
+        if probs[1] > probs[0]:
+            prediction = 1
+            confidence = float(probs[1]) # الثقة هي احتمال الإصابة
+        else:
+            prediction = 0
+            confidence = float(probs[0]) # الثقة هي احتمال السلامة
+            
+        result_text = "Positive" if prediction == 1 else "Negative"
+        
+        # التأكد أن النسبة مئوية واضحة (اختياري، هنا نرجعها ككسر عشري 0.95)
+        
         return {
             "prediction": int(prediction), 
-            "result_text": result,
-            "confidence": confidence
+            "result_text": result_text,
+            "confidence": round(confidence, 4) # تقريب الرقم لـ 4 خانات
         }
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
 # ==========================================
@@ -132,11 +141,13 @@ def read_analytics():
 @app.get("/api/stats")
 def get_dataset_stats():
     try:
-        # Load Data (using the same logic as training)
+        if not os.path.exists(CSV_PATH):
+            return {"error": "Dataset CSV file not found."}
+
+        # Load Data
         df = pd.read_csv(CSV_PATH)
         
-        # Helper to map categorical to numbers for aggregations if needed, but we focus on raw stats first
-        # We need to map target for counts
+        # Basic mapping
         df['pcr_result_num'] = df['pcr_result'].map({'positive': 1, 'negative': 0})
         
         # 1. General counts
@@ -144,18 +155,12 @@ def get_dataset_stats():
         positive_cases = int(df['pcr_result_num'].sum())
         negative_cases = total_samples - positive_cases
         
-        # 2. Averages per Class (Sick vs Healthy)
-        # Group by Result
-        # Convert numeric columns explicitly just in case
+        # 2. Averages per Class
         numeric_cols = ['age', 'temperature_C', 'inflammatory_marker', 'symptom_duration_days']
-        
-        # Basic cleaning for stats (removing 'C' from temp if present effectively) - simple conversion
-        # This mirrors clean logic but for quick stats visualization
         temp_df = df.copy()
         
-        # Simple cleanup (assuming format is mostly clean or we handle errors)
         try:
-           # Clean Temperature: Remove 'C', handle outliers roughly for visualization
+           # Clean Temperature simply for stats
            temp_df['temperature_C'] = temp_df['temperature_C'].astype(str).str.replace('C', '', case=False)
            temp_df['temperature_C'] = pd.to_numeric(temp_df['temperature_C'], errors='coerce')
         except:
@@ -163,8 +168,6 @@ def get_dataset_stats():
 
         grouped = temp_df.groupby('pcr_result')[numeric_cols].mean().round(2)
         
-        # Prepare Radar Data (Normalized relative to max for visual comparison, or raw?)
-        # Let's send raw averages
         radar_data = {
             "positive": grouped.loc['positive'].to_dict() if 'positive' in grouped.index else {},
             "negative": grouped.loc['negative'].to_dict() if 'negative' in grouped.index else {}
@@ -173,7 +176,7 @@ def get_dataset_stats():
         # 3. City Distribution
         city_counts = df['city'].value_counts().head(5).to_dict()
         
-        # 4. Scatter Data (Sample of 100 points to keep payload light)
+        # 4. Scatter Data (Sample)
         positive_sample = temp_df[temp_df['pcr_result'] == 'positive'].sample(min(50, positive_cases))
         negative_sample = temp_df[temp_df['pcr_result'] == 'negative'].sample(min(50, negative_cases))
         
@@ -204,5 +207,6 @@ def get_dataset_stats():
     except Exception as e:
         print(f"Stats Error: {e}")
         return {"error": str(e)}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
