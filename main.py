@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict
 import joblib
 import pandas as pd
@@ -22,6 +23,9 @@ MODEL_PATH = os.path.join(BASE_DIR, "automated_covid_model.pkl")
 HTML_PATH = os.path.join(BASE_DIR, "index.html")
 ANALYTICS_HTML_PATH = os.path.join(BASE_DIR, "charts.html")
 CSV_PATH = os.path.join(BASE_DIR, "pcr_results_egyptian_applicants2020_dataset_final_version_dirty_extended_v3_with_city_and_markers.csv")
+
+# Mount Static Files for Images
+app.mount("/img", StaticFiles(directory=os.path.join(BASE_DIR, "img")), name="img")
 
 # ==========================================
 # 2. تفعيل CORS
@@ -92,27 +96,6 @@ def read_analytics():
     if os.path.exists(ANALYTICS_HTML_PATH):
         return FileResponse(ANALYTICS_HTML_PATH)
     return {"error": "Analytics file (charts.html) not found."}
-
-@app.get("/{filename}")
-async def read_static_file(filename: str):
-    """
-    Serve static files (images, css, js) if they exist in the root directory.
-    Restricted to specific extensions for security.
-    """
-    file_path = os.path.join(BASE_DIR, filename)
-    allowed_extensions = {".jpg", ".jpeg", ".png", ".gif", ".ico", ".svg", ".css", ".js"}
-    
-    # Check extension
-    _, ext = os.path.splitext(filename)
-    if ext.lower() not in allowed_extensions:
-        # Fallback: maybe let FastAPI handle 404 naturally or return specific error
-        # For now, we only serve known safe types from root
-        raise HTTPException(status_code=404, detail="File type not allowed or file not found")
-
-    if os.path.exists(file_path):
-        return FileResponse(file_path)
-    
-    raise HTTPException(status_code=404, detail="File not found")
 
 @app.post("/predict")
 def predict_covid(data: PatientData):
