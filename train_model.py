@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer, KNNImputer
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
-
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, recall_score
 from ml_utils import TempCleaner, DiseaseExtractor, ManualMapper, SmartAgeImputer
 
 def main():
@@ -90,6 +90,12 @@ def main():
     print("="*40)
     
     y_pred = full_pipeline.predict(X_test)
+
+    # --- البداية: أضف هذا الجزء ---
+    rec = recall_score(y_test, y_pred)
+    print(f"⚠️ Recall Score (Sensitivity): {rec:.2%}")
+    # --- النهاية ---
+
     test_acc = accuracy_score(y_test, y_pred)
     print(f"Test Accuracy:    {test_acc:.2%}")
 
